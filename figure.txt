@@ -1,0 +1,2979 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from scipy import stats
+from matplotlib.lines import Line2D
+##堆叠图pgdp_sszx_percent.csv
+# 创建数据
+df =pd.read_csv("pgdp_sszx.csv",encoding="gbk")
+#df = pd.DataFrame(data, index=years)
+df
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色（根据描述中的颜色）
+pgdp_groups = sorted(df['pgdp'].unique())
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'Image-guided']
+
+# 绘制堆叠柱状图 - 单独绘制每个pgdp组的图表
+for pgdp_val in pgdp_groups:
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前pgdp组的数据
+    group_data = df[df['pgdp'] == pgdp_val]
+    
+    # 确保年份数据正确
+    years = sorted(group_data['year'].unique()) 
+    
+   # 为每个治疗方案的每个年份提取百分比数据
+    # 创建存储每个治疗方案数据的字典
+    treatment_percentages = {}
+    
+    for treatment in treatments:
+        treatment_percentages[treatment] = []
+        for year in years:
+            # 从group_data中提取对应treatment和year的数据
+            value = group_data[(group_data['sszx'] == treatment) & (group_data['year'] == year)]
+            if not value.empty:
+                treatment_percentages[treatment].append(value['percent'].iloc[0])
+            else:
+                # 如果没有数据，填充0
+                treatment_percentages[treatment].append(0)
+    
+    # 初始化底部位置数组
+    bottom = np.zeros(len(years))
+    
+    # 绘制每个治疗方案的堆叠柱状图
+    for i, (treatment, color) in enumerate(zip(treatments, colors)):
+        # 获取当前治疗方案的百分比数据
+        values = treatment_percentages[treatment]
+        
+        # 绘制堆叠柱状图
+        ax.bar(years, values, bottom=bottom, color=color, label=treatment, width=0.6)
+        bottom += values
+    
+    # 设置坐标轴范围
+    ax.set_ylim(0, 100)
+    # 根据实际数据年份设置x轴范围
+    if len(years) > 0:
+        ax.set_xlim(min(years)-0.5, max(years)+0.5)
+    
+        #ax.set_ylim(0, 100)
+        #ax.set_xlim(2015.5, 2024.5)
+
+        # 设置Y轴刻度
+        ax.set_yticks([0, 20, 40, 60, 80, 100])
+        ax.set_yticks([10, 20, 30, 40, 50, 60, 70, 80, 90], minor=True)
+        ax.set_yticklabels(['0%', '20%', '40%', '60%', '80%', '100%'], fontsize=50,fontweight='bold')
+
+        # 设置X轴刻度
+        ax.set_xticks(years)
+        ax.set_xticklabels(years, fontsize=42,rotation=45, ha='right',fontweight='bold')
+
+        # 移除边框，只保留坐标轴
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(True)
+        ax.spines['bottom'].set_visible(True)
+        # 加粗坐标轴 - 设置线宽为2.5
+        ax.spines['left'].set_linewidth(2.5)
+        ax.spines['bottom'].set_linewidth(2.5)
+        # 添加图例
+        #ax.legend(group_data['sszx'], loc='upper right', bbox_to_anchor=(2, 1),frameon=False,prop={'weight': 'bold',"size":36})
+
+        # 调整布局
+        plt.tight_layout()
+
+##图例RFA/UAE
+#high GDP region from 2016 to 2024
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和标签
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM (42.36% to 12.60%)', 'LM (35.97% to 40.09%)', 'HM (13.15% to 35.85%)', 'HIFU (5.48% to 10.63%)', 'VM (2.84% to 0.61%)', 'RFA/UAE (0.21% to 0.22%)']
+
+# 创建图形和轴
+fig, ax = plt.subplots(figsize=(8, 6),facecolor='none')
+
+# 创建矩形图例元素
+legend_elements = [mpatches.Patch(color=color, label=treatment, edgecolor='black', linewidth=0.5) 
+                   for color, treatment in zip(colors, treatments)]
+
+# 添加图例
+legend = ax.legend(handles=legend_elements, 
+                   loc='center', 
+                   frameon=False,
+                   fancybox=True,
+                   shadow=True,
+                   prop={'weight': 'bold',"size":36},
+                   edgecolor='none'
+                   )
+
+# 设置图例边框样式
+legend.get_frame().set_linewidth(0.5)
+legend.get_frame().set_boxstyle('round,pad=0.2')
+
+# 隐藏轴
+ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+#middle GDP region from 2016 to 2024
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和标签
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM (45.48% to 21.48%)', 'LM (7.67% to 1.18%)', 'HM (7.01% to 33.70%)', 'HIFU (25.92% to 15.55%)', 'VM (7.67% to 1.18%)', 'RFA/UAE (0.17% to 0.51%)']
+
+# 创建图形和轴
+fig, ax = plt.subplots(figsize=(8, 6),facecolor='none')
+
+# 创建矩形图例元素
+legend_elements = [mpatches.Patch(color=color, label=treatment, edgecolor='black', linewidth=0.5) 
+                   for color, treatment in zip(colors, treatments)]
+
+# 添加图例
+legend = ax.legend(handles=legend_elements, 
+                   loc='center', 
+                   frameon=False,
+                   fancybox=True,
+                   shadow=True,
+                   prop={'weight': 'bold',"size":36},
+                   edgecolor='none'
+                   )
+
+# 设置图例边框样式
+legend.get_frame().set_linewidth(0.5)
+legend.get_frame().set_boxstyle('round,pad=0.2')
+
+# 隐藏轴
+ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+#low GDP region from 2016 to 2024
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和标签
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM (55.92% to 15.76%)', 'LM (18.96% to 32.31%)', 'HM (8.86% to 31.47%)', 'HIFU (5.70% to 18.96%)', 'VM (8.52% to 0.96%)', 'RFA/UAE (2.06% to 0.54%)']
+
+# 创建图形和轴
+fig, ax = plt.subplots(figsize=(8, 6),facecolor='none')
+
+# 创建矩形图例元素
+legend_elements = [mpatches.Patch(color=color, label=treatment, edgecolor='black', linewidth=0.5) 
+                   for color, treatment in zip(colors, treatments)]
+
+# 添加图例
+legend = ax.legend(handles=legend_elements, 
+                   loc='center', 
+                   frameon=False,
+                   fancybox=True,
+                   shadow=True,
+                   prop={'weight': 'bold',"size":36},
+                   edgecolor='none'
+                   )
+
+# 设置图例边框样式
+legend.get_frame().set_linewidth(0.5)
+legend.get_frame().set_boxstyle('round,pad=0.2')
+
+# 隐藏轴
+ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+##增加线性图例
+#high GDP region from 2016 to 2024
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和标签
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'RFA/UAE']
+
+# 创建图形和轴
+fig, ax = plt.subplots(figsize=(8, 6), facecolor='none')
+
+# 创建自定义的散点+线段图例元素
+# 使用Line2D创建一条线段，并在中间添加一个标记来模拟散点加线段的效果
+legend_elements = [
+    Line2D(
+        [0], [0],
+        color=color,
+        label=treatment,
+        marker='o',        # 设置散点标记为圆形
+        markersize=8,     # 设置标记大小
+        linestyle='-',     # 设置线条样式为实线
+        linewidth=3        # 设置线条宽度
+    )
+    for color, treatment in zip(colors, treatments)
+]
+
+# 添加图例
+legend = ax.legend(
+    handles=legend_elements,
+    loc='center',
+    frameon=True,        # 改为True以便看到图例框的圆角效果
+    fancybox=True,       # 启用圆角边框
+    shadow=True,         # 启用阴影
+    prop={'weight': 'bold', "size": 12}  # 调整字体大小以适应图形
+)
+
+# 设置图例边框样式
+legend = ax.legend(handles=legend_elements, loc='center', frameon=True)
+legend.get_frame().set_facecolor('none')  # 设置背景完全透明[5,8](@ref)
+legend.get_frame().set_edgecolor('none')  # 去除边框线
+
+# 隐藏轴
+ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+##增加堆叠图图例
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和标签
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'RFA/UAE']
+
+# 创建图形和轴
+fig, ax = plt.subplots(figsize=(8, 6),facecolor='none')
+
+# 创建矩形图例元素
+legend_elements = [mpatches.Patch(color=color, label=treatment, edgecolor='black', linewidth=0.5) 
+                   for color, treatment in zip(colors, treatments)]
+
+# 添加图例
+legend = ax.legend(handles=legend_elements, 
+                   loc='center', 
+                   frameon=False,
+                   fancybox=True,
+                   shadow=True,
+                   prop={'weight': 'bold',"size":36},
+                   edgecolor='none'
+                   )
+
+# 设置图例边框样式
+legend.get_frame().set_linewidth(0.5)
+legend.get_frame().set_boxstyle('round,pad=0.2')
+
+# 隐藏轴
+ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+##堆叠图pgdp_qzg_percent(只取前三高中低GDP)
+# 创建数据
+df =pd.read_csv("pgdp_qzg_percent.csv",encoding="gbk")
+#df = pd.DataFrame(data, index=years)
+df
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色（根据描述中的颜色）
+pgdp_groups = sorted(df['pgdp'].unique())
+colors = ['#66b3ff','#ff9999']
+treatments = [0, 1]
+
+# 绘制堆叠柱状图 - 单独绘制每个pgdp组的图表
+for pgdp_val in pgdp_groups:
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前pgdp组的数据
+    group_data = df[df['pgdp'] == pgdp_val]
+    
+    # 确保年份数据正确
+    years = sorted(group_data['year1'].unique()) 
+    
+   # 为每个治疗方案的每个年份提取百分比数据
+    # 创建存储每个治疗方案数据的字典
+    treatment_percentages = {}
+    
+    for treatment in treatments:
+        treatment_percentages[treatment] = []
+        for year in years:
+            # 从group_data中提取对应treatment和year的数据
+            value = group_data[(group_data['sszx'] == treatment) & (group_data['year1'] == year)]
+            if not value.empty:
+                treatment_percentages[treatment].append(value['zfy1'].iloc[0])
+            else:
+                # 如果没有数据，填充0
+                treatment_percentages[treatment].append(0)
+    
+    # 初始化底部位置数组
+    bottom = np.zeros(len(years))
+    
+    # 绘制每个治疗方案的堆叠柱状图
+    for i, (treatment, color) in enumerate(zip(treatments, colors)):
+        # 获取当前治疗方案的百分比数据
+        values = treatment_percentages[treatment]
+        
+        # 绘制堆叠柱状图
+        ax.bar(years, values, bottom=bottom, color=color, label=treatment, width=0.6)
+        bottom += values
+    
+    # 设置坐标轴范围
+    ax.set_ylim(0, 100)
+    # 根据实际数据年份设置x轴范围
+    if len(years) > 0:
+        ax.set_xlim(min(years)-0.5, max(years)+0.5)
+
+        # 设置Y轴刻度
+        ax.set_yticks([0, 20, 40, 60, 80, 100])
+        ax.set_yticks([10, 20, 30, 40, 50, 60, 70, 80, 90], minor=True)
+        ax.set_yticklabels(['0%', '20%', '40%', '60%', '80%', '100%'], fontsize=50,fontweight='bold')
+
+        # 设置X轴刻度
+        ax.set_xticks(years)
+        ax.set_xticklabels(years, fontsize=42,rotation=45, ha='right',fontweight='bold')
+
+        # 移除边框，只保留坐标轴
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(True)
+        ax.spines['bottom'].set_visible(True)
+        # 加粗坐标轴 - 设置线宽为2.5
+        ax.spines['left'].set_linewidth(2.5)
+        ax.spines['bottom'].set_linewidth(2.5)
+        # 添加图例
+        #ax.legend(group_data['sszx'], loc='upper right', bbox_to_anchor=(2, 1),frameon=False,prop={'weight': 'bold',"size":36})
+
+        # 调整布局
+        plt.tight_layout()
+
+#high GDP region from 2016 to 2024
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和标签
+colors = ['#66b3ff','#ff9999']
+treatments = ['UP (49.19% to 68.52%)', 'UR (50.81% to 31.48%)']
+
+# 创建图形和轴
+fig, ax = plt.subplots(figsize=(8, 6),facecolor='none')
+
+# 创建矩形图例元素
+legend_elements = [mpatches.Patch(color=color, label=treatment, edgecolor='black', linewidth=0.5) 
+                   for color, treatment in zip(colors, treatments)]
+
+# 添加图例
+legend = ax.legend(handles=legend_elements, 
+                   loc='center', 
+                   frameon=False,
+                   fancybox=True,
+                   shadow=True,
+                   prop={'weight': 'bold',"size":36},
+                   edgecolor='none'
+                   )
+
+# 设置图例边框样式
+legend.get_frame().set_linewidth(0.5)
+legend.get_frame().set_boxstyle('round,pad=0.2')
+
+# 隐藏轴
+ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+##0909 uterus
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib import font_manager
+
+plt.rcParams['font.family'] = ['Times New Roman', 'DejaVu Sans']
+plt.rcParams['axes.unicode_minus'] = False
+
+colors = ['#66b3ff', '#ff9999']
+treatments = ['uterus preservation', 'uterus removal']
+
+fig, ax = plt.subplots(figsize=(8, 6), facecolor='none')
+legend_elements = [mpatches.Patch(facecolor=c, label=t, edgecolor='black', linewidth=0.5)
+                   for c, t in zip(colors, treatments)]
+
+legend = ax.legend(handles=legend_elements, loc='center', frameon=False,
+                   fancybox=True, shadow=True,
+                   prop={'weight': 'bold', 'size': 36}, edgecolor='none')
+legend.get_frame().set_linewidth(0.5)
+legend.get_frame().set_boxstyle('round,pad=0.2')
+ax.axis('off')
+
+# —— 关键：先量图例真实尺寸，再把画布裁到刚好包住它 ——
+fig.canvas.draw()
+bbox = legend.get_tightbbox(fig.canvas.get_renderer())
+pad = 0.15
+fig.set_size_inches(bbox.width / fig.dpi + 2*pad, bbox.height / fig.dpi + 2*pad)
+legend.set_bbox_to_anchor((0.5, 0.5), transform=ax.transAxes)   # 重新居中
+fig.canvas.draw()
+
+fig.savefig('treatment_legend.png', dpi=300, bbox_inches='tight',
+            pad_inches=pad, transparent=True, facecolor='none')
+#mid GDP region from 2016 to 2024
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和标签
+colors = ['#66b3ff','#ff9999']
+treatments = ['UP (43.68% to 59.87%)', 'UR (56.32% to 40.13%)']
+
+# 创建图形和轴
+fig, ax = plt.subplots(figsize=(8, 6),facecolor='none')
+
+# 创建矩形图例元素
+legend_elements = [mpatches.Patch(color=color, label=treatment, edgecolor='black', linewidth=0.5) 
+                   for color, treatment in zip(colors, treatments)]
+
+# 添加图例
+legend = ax.legend(handles=legend_elements, 
+                   loc='center', 
+                   frameon=False,
+                   fancybox=True,
+                   shadow=True,
+                   prop={'weight': 'bold',"size":36},
+                   edgecolor='none'
+                   )
+
+# 设置图例边框样式
+legend.get_frame().set_linewidth(0.5)
+legend.get_frame().set_boxstyle('round,pad=0.2')
+
+# 隐藏轴
+ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+#low GDP region from 2016 to 2024
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和标签
+colors = ['#66b3ff','#ff9999']
+treatments = ['UP (38.89% to 67.69%)', 'UR (61.11% to 32.31%)']
+
+# 创建图形和轴
+fig, ax = plt.subplots(figsize=(8, 6),facecolor='none')
+
+# 创建矩形图例元素
+legend_elements = [mpatches.Patch(color=color, label=treatment, edgecolor='black', linewidth=0.5) 
+                   for color, treatment in zip(colors, treatments)]
+
+# 添加图例
+legend = ax.legend(handles=legend_elements, 
+                   loc='center', 
+                   frameon=False,
+                   fancybox=True,
+                   shadow=True,
+                   prop={'weight': 'bold',"size":36},
+                   edgecolor='none'
+                   )
+
+# 设置图例边框样式
+legend.get_frame().set_linewidth(0.5)
+legend.get_frame().set_boxstyle('round,pad=0.2')
+
+# 隐藏轴
+ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+##折线图不同医院水平yydj2_sszx
+# 创建数据
+df =pd.read_csv("yydj2_sszx.csv",encoding="gbk")
+#df = pd.DataFrame(data, index=years)
+df
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色（根据描述中的颜色）
+yydj2_groups = sorted(df['yydj2'].unique())
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'RFA/UAE']
+
+# 绘制堆叠柱状图 - 单独绘制每个yydj2组的图表
+for yydj2_val in yydj2_groups:
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前yydj2组的数据
+    group_data = df[df['yydj2'] == yydj2_val]
+    
+    # 确保年份数据正确
+    years = sorted(group_data['year'].unique()) 
+    
+   # 为每个治疗方案的每个年份提取百分比数据
+    # 创建存储每个治疗方案数据的字典
+    treatment_percentages = {}
+    
+    for treatment in treatments:
+        treatment_percentages[treatment] = []
+        for year in years:
+            # 从group_data中提取对应treatment和year的数据
+            value = group_data[(group_data['sszx'] == treatment) & (group_data['year'] == year)]
+            if not value.empty:
+                treatment_percentages[treatment].append(value['percent'].iloc[0])
+            else:
+                # 如果没有数据，填充0
+                treatment_percentages[treatment].append(0)
+    
+    # 初始化底部位置数组
+    bottom = np.zeros(len(years))
+    
+    # 绘制每个治疗方案的堆叠柱状图
+    for i, (treatment, color) in enumerate(zip(treatments, colors)):
+        # 获取当前治疗方案的百分比数据
+        values = treatment_percentages[treatment]
+        
+        # 绘制堆叠柱状图
+        ax.bar(years, values, bottom=bottom, color=color, label=treatment, width=0.6)
+        bottom += values
+    
+    # 设置坐标轴范围
+    ax.set_ylim(0, 100)
+    # 根据实际数据年份设置x轴范围
+    if len(years) > 0:
+        ax.set_xlim(min(years)-0.5, max(years)+0.5)
+    
+        #ax.set_ylim(0, 100)
+        #ax.set_xlim(2015.5, 2024.5)
+
+        # 设置Y轴刻度
+        ax.set_yticks([0, 20, 40, 60, 80, 100])
+        ax.set_yticks([10, 20, 30, 40, 50, 60, 70, 80, 90], minor=True)
+        ax.set_yticklabels(['0%', '20%', '40%', '60%', '80%', '100%'], fontsize=50,fontweight='bold')
+
+        # 设置X轴刻度
+        ax.set_xticks(years)
+        ax.set_xticklabels(years, fontsize=42,rotation=45, ha='right',fontweight='bold')
+
+        # 移除边框，只保留坐标轴
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(True)
+        ax.spines['bottom'].set_visible(True)
+        # 加粗坐标轴 - 设置线宽为2.5
+        ax.spines['left'].set_linewidth(2.5)
+        ax.spines['bottom'].set_linewidth(2.5)
+        # 添加图例
+        #ax.legend(group_data['sszx'], loc='upper right', bbox_to_anchor=(2, 1),frameon=False,prop={'weight': 'bold',"size":36})
+
+        # 调整布局
+        plt.tight_layout()
+# 自写函数提取
+def get_percent(sszx_value, year_value,yydj2_value):
+    result = df[(df['sszx'] == sszx_value) & 
+                (df['year'] == year_value) & 
+                (df['group'] == yydj2_value)]['percent']
+    
+    if not result.empty:
+        return round(result.iloc[0], 2)
+    else:
+        return 0.00  #错误值
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'RFA/UAE'] # 预定义治疗方式
+
+# 获取唯一的分组值
+yydj2_groups = sorted(df['yydj2'].unique())
+
+# 为每个分组创建一幅图
+for yydj2_val in yydj2_groups:
+    # 为当前分组新建一个空的标签列表
+    treatments_list = []
+    
+    # 筛选当前yydj2组的数据
+    group_data = df[df['yydj2'] == yydj2_val]
+    
+    # 为当前分组的每个治疗方式生成标签
+    for treatment in treatments:
+        percent_2016 = get_percent(treatment, 2016,yydj2_val)
+        percent_2024 = get_percent(treatment, 2024,yydj2_val)
+        percent=round((percent_2024-percent_2016)/8,2)
+        label = f"{treatment} ({percent_2016}% to {percent_2024}%, {percent}%)"
+        treatments_list.append(label)
+    
+    # 为当前分组创建独立的图形和轴
+    fig, ax = plt.subplots(figsize=(8, 6), facecolor='none')
+    
+    # 使用当前分组的标签列表创建图例
+    legend_elements = [mpatches.Patch(color=color, label=treatment_label, edgecolor='black', linewidth=0.5) 
+                      for color, treatment_label in zip(colors, treatments_list)]
+    
+    legend = ax.legend(handles=legend_elements, 
+                      loc='center', 
+                      frameon=False,
+                      fancybox=True,
+                      shadow=True,
+                      prop={'weight': 'bold', "size": 36},
+                      edgecolor='none'
+                      )
+    legend.get_frame().set_linewidth(0.5)
+    legend.get_frame().set_boxstyle('round,pad=0.2')
+    ax.axis('off')
+    
+    # 可以为每张图添加一个标题以区分分组
+    ax.set_title(f'Treatment Distribution for Group: {yydj2_val}', pad=20, fontsize=14)
+    
+    plt.tight_layout()
+    # 每循环一次，显示一张图
+    plt.show()
+##计算Average annual change rate（%）
+# 创建数据
+df =pd.read_csv("qzg_all_age3.csv",encoding="gbk")
+#df = pd.DataFrame(data, index=years)
+df
+def get_percent(df, treatment, year_value):
+    """获取特定治疗方式和年份的百分比值"""
+    result = df[(df['year'] == year_value) & (df['group'] == treatment)]['rate']
+    
+    if not result.empty:
+        return round(result.iloc[0], 2)
+    else:
+        return 0.00  # 默认值
+
+# 获取所有治疗方式[10](@ref)
+treatments = df['group'].unique()
+treatments_list = []
+
+# 为每个治疗方式生成标签
+for treatment in treatments:
+    percent_2016 = get_percent(df, treatment, 2016)
+    percent_2024 = get_percent(df, treatment, 2024)
+    
+    # 计算年均变化率[6,7](@ref)
+    if percent_2016 != 0:  # 避免除零错误
+        annual_change = round((percent_2024 - percent_2016) / 8, 2)
+    else:
+        annual_change = 0.00
+    
+    label = f"{treatment} ({percent_2016}% to {percent_2024}%, {annual_change}%)"
+    treatments_list.append(label)
+treatments_list
+#住院天数pgdp_sszx_zyts连续变量
+# 创建数据
+df =pd.read_csv("pgdp_sszx_zyts.csv",encoding="gbk")#住院天数zyts,住院费用zfy
+#df = pd.DataFrame(data, index=years)
+df
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色（根据描述中的颜色）
+pgdp_groups = sorted(df['pgdp'].unique())
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'RFA/UAE']
+
+# 绘制拟合线图 - 单独绘制每个pgdp组的图表
+for pgdp_val in pgdp_groups:
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前pgdp组的数据
+    group_data = df[df['pgdp'] == pgdp_val]
+    
+    # 为每个治疗方案绘制拟合线
+    for i, (treatment, color) in enumerate(zip(treatments, colors)):
+        # 筛选当前治疗方案的数据
+        treatment_data = group_data[group_data['sszx'] == treatment]
+        
+        if not treatment_data.empty:
+            # 按year1排序
+            treatment_data = treatment_data.sort_values('year1')
+            
+            # 提取x和y数据
+            x_data = treatment_data['year1'].values
+            y_data = treatment_data['zyts1'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7)
+            
+            # 绘制拟合线
+            if len(x_data) > 1:  # 至少需要2个点才能拟合
+                # 使用numpy的polyfit进行线性拟合
+                z = np.polyfit(x_data, y_data, 1)  # 1次多项式（线性拟合）
+                p = np.poly1d(z)
+                
+                # 生成拟合线的x值（从最小年份到最大年份）
+                x_fit = np.linspace(min(x_data), max(x_data), 100)
+                y_fit = p(x_fit)
+                
+                # 绘制拟合线
+                ax.plot(x_fit, y_fit, color=color, linewidth=3, 
+                       label=f'{treatment}', alpha=0.8)
+                # 计算置信区间
+                # 计算残差
+                residuals = y_data - p(x_data)
+                # 计算残差的标准差
+                residual_std = np.std(residuals)
+                # 计算标准误差
+                n = len(x_data)
+                # 计算预测值的标准误差
+                x_mean = np.mean(x_data)
+                Sxx = np.sum((x_data - x_mean)**2)
+                # 计算每个预测点的标准误差
+                se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                # 计算95%置信区间 (t分布，自由度为n-2)
+                t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                ci = t_val * se
+                
+                # 绘制95%置信区间阴影
+                ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                               color=color, alpha=0.2, zorder=3)
+    
+    # 设置坐标轴范围
+    # 根据实际数据动态设置y轴范围
+    y_min = group_data['zyts1'].min() if not group_data.empty else 0
+    y_max = group_data['zyts1'].max() if not group_data.empty else 10
+    
+    # 添加一些余量
+    y_range = y_max - y_min
+    ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+    
+    # 设置x轴范围
+    if not group_data.empty:
+        years = sorted(group_data['year1'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            # 设置X轴刻度
+            ax.set_xticks(years)
+            ax.set_xticklabels(years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    
+    # 设置Y轴刻度
+    # 根据数据动态设置y轴刻度
+    y_ticks = np.linspace(0, 10, 6)  # 0到10之间取6个等间隔点
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels([f'{int(tick)}' for tick in y_ticks], fontsize=50, fontweight='bold')
+    
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=52, fontweight='bold', labelpad=20)
+    #ax.set_ylabel('Days of Hospitalization', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 添加网格线（可选，使图表更易读）
+    ax.grid(True, alpha=0.3, linestyle='--')
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by Treatment (pgdp={pgdp_val})', 
+    #           fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+# 自写函数提取
+def get_zyts1(sszx_value, year_value,pgdp_value):
+    result = df[(df['sszx'] == sszx_value) & 
+                (df['year1'] == year_value) & 
+                (df['pgdp'] == pgdp_value)]['zyts1']
+    
+    if not result.empty:
+        return round(result.iloc[0], 2)
+    else:
+        return 0.00  #错误值
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'Image-guided'] # 预定义治疗方式
+
+# 获取唯一的分组值
+pgdp_groups = sorted(df['pgdp'].unique())
+
+# 为每个分组创建一幅图
+for pgdp_val in pgdp_groups:
+    # 为当前分组新建一个空的标签列表
+    treatments_list = []
+    
+    # 筛选当前pgdp组的数据
+    group_data = df[df['pgdp'] == pgdp_val]
+    
+    # 为当前分组的每个治疗方式生成标签
+    for treatment in treatments:
+        zyts1_2016 = get_zyts1(treatment, 2016,pgdp_val)
+        zyts1_2024 = get_zyts1(treatment, 2024,pgdp_val)
+        zyts1=round((zyts1_2024-zyts1_2016)/8,2)
+        zyts1_change=f"{zyts1:.2f}"
+        treatment_display = "RFA/UAE" if treatment == "Image-guided" else treatment
+        label = f"{treatment_display} ({zyts1_2016} to {zyts1_2024}, {zyts1_change}day)"
+        treatments_list.append(label)
+    
+    # 为当前分组创建独立的图形和轴
+    fig, ax = plt.subplots(figsize=(8, 6), facecolor='none')
+    
+    # 使用当前分组的标签列表创建图例
+    legend_elements = [mpatches.Patch(color=color, label=treatment_label, edgecolor='black', linewidth=0.5) 
+                      for color, treatment_label in zip(colors, treatments_list)]
+        
+    legend = ax.legend(handles=legend_elements, 
+                      loc='center', 
+                      frameon=False,
+                      fancybox=True,
+                      shadow=True,
+                      prop={'weight': 'bold', "size": 36},
+                      edgecolor='none'
+                      )
+    legend.get_frame().set_linewidth(0.5)
+    legend.get_frame().set_boxstyle('round,pad=0.2')
+    ax.axis('off')
+    
+    # 可以为每张图添加一个标题以区分分组
+    #ax.set_title(f'Treatment Distribution for Group: {pgdp_val}', pad=20, fontsize=14)
+    
+    plt.tight_layout()
+    # 每循环一次，显示一张图
+    plt.show()
+##住院天数总均数（不分GDP，还是pgdp_sszx_zyts，计算gdp=0,1,2时zyts/3）
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和治疗方案
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'RFA/UAE']
+
+# 创建图形和坐标轴
+fig, ax = plt.subplots(figsize=(10, 8))
+
+# 设置图形内部的背景为透明
+fig.patch.set_alpha(0.0)
+ax.patch.set_alpha(0.0)
+
+# 筛选pgdp=0,1,2的数据
+df_filtered = df[df['pgdp'].isin([0, 1, 2])]
+
+# 为每个治疗方案绘制总的平均线
+for i, (treatment, color) in enumerate(zip(treatments, colors)):
+    # 筛选当前治疗方案的数据（包含所有pgdp组）
+    treatment_data = df_filtered[df_filtered['sszx'] == treatment]
+    
+    if not treatment_data.empty:
+        # 按year1分组并计算zyts1的平均值（所有pgdp组的平均）
+        yearly_means = treatment_data.groupby('year1')['zyts1'].mean().reset_index()
+        yearly_means = yearly_means.sort_values('year1')
+        
+        # 提取x和y数据
+        x_data = yearly_means['year1'].values
+        y_data = yearly_means['zyts1'].values
+        
+        # 绘制散点
+        ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7)
+        
+        # 绘制拟合线
+        if len(x_data) > 1:  # 至少需要2个点才能拟合
+            # 使用numpy的polyfit进行线性拟合
+            z = np.polyfit(x_data, y_data, 1)  # 1次多项式（线性拟合）
+            p = np.poly1d(z)
+            
+            # 生成拟合线的x值（从最小年份到最大年份）
+            x_fit = np.linspace(min(x_data), max(x_data), 100)
+            y_fit = p(x_fit)
+            
+            # 绘制拟合
+            ax.plot(x_fit, y_fit, color=color, linewidth=3, 
+            label=f'{treatment}', alpha=0.8)
+            # 计算置信区间
+            # 计算残差
+            residuals = y_data - p(x_data)
+            # 计算残差的标准差
+            residual_std = np.std(residuals)
+            #计算标准误差
+            n = len(x_data)
+            # 计算预测值的标准误差
+            x_mean = np.mean(x_data)
+            Sxx = np.sum((x_data - x_mean)**2)
+            # 计算每个预测点的标准误差
+            se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+            # 计算95%置信区间 (t分布，自由度为n-2)
+            t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+            ci = t_val * se
+            
+            # 绘制95%置信区间阴影
+            ax.fill_between(x_fit, y_fit - ci, y_fit + ci,color=color, alpha=0.2, zorder=3)
+
+# 设置坐标轴范围
+if not df_filtered.empty:
+    y_min = df_filtered['zyts1'].min()
+    y_max = df_filtered['zyts1'].max()
+    y_range = y_max - y_min
+    ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+    
+    years = sorted(df_filtered['year1'].unique())
+    if len(years) > 0:
+        ax.set_xlim(min(years)-0.5, max(years)+0.5)
+        ax.set_xticks(years)
+        ax.set_xticklabels(years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+
+# 设置Y轴
+y_ticks = np.linspace(0, 10, 6)
+ax.set_yticks(y_ticks)
+ax.set_yticklabels([f'{int(tick)}' for tick in y_ticks], fontsize=50, fontweight='bold')
+
+# 设置坐标轴标签
+ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+ax.set_ylabel('Days', fontsize=42, fontweight='bold', labelpad=20)
+
+# 添加网格线
+ax.grid(True, alpha=0.3, linestyle='--')
+
+# 移除边框，只保留坐标轴
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_linewidth(2.5)
+ax.spines['bottom'].set_linewidth(2.5)
+
+# 添加图例
+#ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+
+# 调整布局
+plt.tight_layout()
+
+# 显示图表
+plt.show()
+##次均总费用pgdp_sszx_zfy连续变量
+# 创建数据
+df =pd.read_csv("pgdp_sszx_zfy.csv",encoding="gbk")#住院天数zyts,住院费用zfy
+#df = pd.DataFrame(data, index=years)
+df
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色（根据描述中的颜色）
+pgdp_groups = sorted(df['pgdp'].unique())
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'RFA/UAE']
+
+# 绘制拟合线图 - 单独绘制每个pgdp组的图表
+for pgdp_val in pgdp_groups:
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前pgdp组的数据
+    group_data = df[df['pgdp'] == pgdp_val]
+    
+    # 为每个治疗方案绘制拟合线
+    for i, (treatment, color) in enumerate(zip(treatments, colors)):
+        # 筛选当前治疗方案的数据
+        treatment_data = group_data[group_data['sszx'] == treatment]
+        
+        if not treatment_data.empty:
+            # 按year1排序
+            treatment_data = treatment_data.sort_values('year1')
+            
+            # 提取x和y数据
+            x_data = treatment_data['year1'].values
+            y_data = treatment_data['zfy1'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7)
+            
+            # 绘制拟合线
+            if len(x_data) > 1:  # 至少需要2个点才能拟合
+                # 使用numpy的polyfit进行线性拟合
+                z = np.polyfit(x_data, y_data, 1)  # 1次多项式（线性拟合）
+                p = np.poly1d(z)
+                
+                # 生成拟合线的x值（从最小年份到最大年份）
+                x_fit = np.linspace(min(x_data), max(x_data), 100)
+                y_fit = p(x_fit)
+                
+                # 绘制拟合线
+                ax.plot(x_fit, y_fit, color=color, linewidth=3, 
+                       label=f'{treatment}', alpha=0.8)
+                # 计算置信区间
+                # 计算残差
+                residuals = y_data - p(x_data)
+                # 计算残差的标准差
+                residual_std = np.std(residuals)
+                # 计算标准误差
+                n = len(x_data)
+                # 计算预测值的标准误差
+                x_mean = np.mean(x_data)
+                Sxx = np.sum((x_data - x_mean)**2)
+                # 计算每个预测点的标准误差
+                se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                # 计算95%置信区间 (t分布，自由度为n-2)
+                t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                ci = t_val * se
+                
+                # 绘制95%置信区间阴影
+                ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                               color=color, alpha=0.2, zorder=3)
+    
+    # 设置坐标轴范围
+    # 根据实际数据动态设置y轴范围
+    y_min = group_data['zfy1'].min() if not group_data.empty else 7000
+    y_max = group_data['zfy1'].max() if not group_data.empty else 22000
+    
+    # 添加一些余量
+    y_range = y_max - y_min
+    ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+    
+    # 设置x轴范围
+    if not group_data.empty:
+        years = sorted(group_data['year1'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            # 设置X轴刻度
+            ax.set_xticks(years)
+            ax.set_xticklabels(years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    
+    # 设置Y轴刻度
+    # 根据数据动态设置y轴刻度
+    y_ticks = np.linspace(7000, 22000, 6)  # 0到10之间取6个等间隔点
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels([f'{int(tick/1000)}k' for tick in y_ticks], fontsize=50, fontweight='bold')
+    
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=52, fontweight='bold', labelpad=20)
+    #ax.set_ylabel('Average Cost of Hospitalization', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 添加网格线（可选，使图表更易读）
+    ax.grid(True, alpha=0.3, linestyle='--')
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by Treatment (pgdp={pgdp_val})', 
+    #           fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+# 自写函数提取
+def get_zfy1(sszx_value, year_value,pgdp_value):
+    result = df[(df['sszx'] == sszx_value) & 
+                (df['year1'] == year_value) & 
+                (df['pgdp'] == pgdp_value)]['zfy1']
+    if not result.empty:
+        return round(result.iloc[0], 2)
+    else:
+        return 0.00  #错误值
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'Image-guided']
+
+# 获取唯一的分组值
+pgdp_groups = sorted(df['pgdp'].unique())
+
+# 为每个分组创建一幅图
+for pgdp_val in pgdp_groups:
+    # 为当前分组新建一个空的标签列表
+    treatments_list = []
+    
+    # 筛选当前pgdp组的数据
+    group_data = df[df['pgdp'] == pgdp_val]
+    
+    # 为当前分组的每个治疗方式生成标签
+    for treatment in treatments:
+        zfy1_2016 = get_zfy1(treatment, 2016,pgdp_val)
+        zfy1_2024 = get_zfy1(treatment, 2024,pgdp_val)
+        zfy1=round((zfy1_2024-zfy1_2016)/8,2)
+        zfy1_change=f"{zfy1:.2f}"
+        treatment_display = "RFA/UAE" if treatment == "Image-guided" else treatment
+        label = f"{treatment_display} ({zfy1_2016} to {zfy1_2024}, {zfy1_change}¥)"
+        treatments_list.append(label)
+    
+    # 为当前分组创建独立的图形和轴
+    fig, ax = plt.subplots(figsize=(8, 6), facecolor='none')
+    
+    # 使用当前分组的标签列表创建图例
+    legend_elements = [mpatches.Patch(color=color, label=treatment_label, edgecolor='black', linewidth=0.5) 
+                      for color, treatment_label in zip(colors, treatments_list)]
+    
+    legend = ax.legend(handles=legend_elements, 
+                      loc='center', 
+                      frameon=False,
+                      fancybox=True,
+                      shadow=True,
+                      prop={'weight': 'bold', "size": 36},
+                      edgecolor='none'
+                      )
+    legend.get_frame().set_linewidth(0.5)
+    legend.get_frame().set_boxstyle('round,pad=0.2')
+    ax.axis('off')
+    
+    # 可以为每张图添加一个标题以区分分组
+    #ax.set_title(f'Treatment Distribution for Group: {pgdp_val}', pad=20, fontsize=14)
+    
+    plt.tight_layout()
+    # 每循环一次，显示一张图
+    plt.show()
+##住院总费用均数（不分GDP，还是pgdp_sszx_zfy，计算gdp=0,1,2时pgdp_sszx_zfy/3）
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和治疗方案
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'RFA/UAE']
+
+# 创建图形和坐标轴
+fig, ax = plt.subplots(figsize=(10, 8))
+
+# 设置图形内部的背景为透明
+fig.patch.set_alpha(0.0)
+ax.patch.set_alpha(0.0)
+
+# 筛选pgdp=0,1,2的数据
+df_filtered = df[df['pgdp'].isin([0, 1, 2])]
+
+# 为每个治疗方案绘制总的平均线
+for i, (treatment, color) in enumerate(zip(treatments, colors)):
+    # 筛选当前治疗方案的数据（包含所有pgdp组）
+    treatment_data = df_filtered[df_filtered['sszx'] == treatment]
+    
+    if not treatment_data.empty:
+        # 按year1分组并计算zfy1的平均值（所有pgdp组的平均）
+        yearly_means = treatment_data.groupby('year1')['zfy1'].mean().reset_index()
+        yearly_means = yearly_means.sort_values('year1')
+        
+        # 提取x和y数据
+        x_data = yearly_means['year1'].values
+        y_data = yearly_means['zfy1'].values
+        
+        # 绘制散点
+        ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7)
+        
+        # 绘制拟合线
+        if len(x_data) > 1:  # 至少需要2个点才能拟合
+            # 使用numpy的polyfit进行线性拟合
+            z = np.polyfit(x_data, y_data, 1)  # 1次多项式（线性拟合）
+            p = np.poly1d(z)
+            
+            # 生成拟合线的x值（从最小年份到最大年份）
+            x_fit = np.linspace(min(x_data), max(x_data), 100)
+            y_fit = p(x_fit)
+            
+            # 绘制拟合
+            ax.plot(x_fit, y_fit, color=color, linewidth=3, 
+            label=f'{treatment}', alpha=0.8)
+            # 计算置信区间
+            # 计算残差
+            residuals = y_data - p(x_data)
+            # 计算残差的标准差
+            residual_std = np.std(residuals)
+            #计算标准误差
+            n = len(x_data)
+            # 计算预测值的标准误差
+            x_mean = np.mean(x_data)
+            Sxx = np.sum((x_data - x_mean)**2)
+            # 计算每个预测点的标准误差
+            se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+            # 计算95%置信区间 (t分布，自由度为n-2)
+            t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+            ci = t_val * se
+            
+            # 绘制95%置信区间阴影
+            ax.fill_between(x_fit, y_fit - ci, y_fit + ci,color=color, alpha=0.2, zorder=3)
+
+# 设置坐标轴范围
+if not df_filtered.empty:
+    y_min = df_filtered['zfy1'].min()
+    y_max = df_filtered['zfy1'].max()
+    y_range = y_max - y_min
+    ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+    
+    years = sorted(df_filtered['year1'].unique())
+    if len(years) > 0:
+        ax.set_xlim(min(years)-0.5, max(years)+0.5)
+        ax.set_xticks(years)
+        ax.set_xticklabels(years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+
+# 设置Y轴刻度
+# 根据数据动态设置y轴刻度
+y_ticks = np.linspace(7000, 22000, 6)  # 0到10之间取6个等间隔点
+ax.set_yticks(y_ticks)
+ax.set_yticklabels([f'{int(tick/1000)}k' for tick in y_ticks], fontsize=50, fontweight='bold')
+    
+
+# 设置坐标轴标签
+ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+ax.set_ylabel('Expenses', fontsize=42, fontweight='bold', labelpad=20)
+
+# 添加网格线
+ax.grid(True, alpha=0.3, linestyle='--')
+
+# 移除边框，只保留坐标轴
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_linewidth(2.5)
+ax.spines['bottom'].set_linewidth(2.5)
+
+# 添加图例
+#ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+
+# 调整布局
+plt.tight_layout()
+
+# 显示图表
+plt.show()
+##分段点year_inter
+# 创建数据
+df =pd.read_csv("allage_sszx_percent.csv",encoding="gbk")#住院天数zyts,住院费用zfy
+#df = pd.DataFrame(data, index=years)
+filtered_df = df[df['sszx'].isin(['HM', 'LM', 'HIFU'])]
+df=filtered_df
+df
+#添加分段点year_inter
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色（根据描述中的颜色）
+pgdp_groups = sorted(df['sszx'].unique())
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'RFA/UAE']
+
+# 设置分段点
+year_inter = 2019  # 可根据需要调整
+
+# 创建一个图形，包含所有治疗类型
+fig, ax = plt.subplots(figsize=(12, 8))
+
+# 设置图形内部的背景为透明
+fig.patch.set_alpha(0.0)
+ax.patch.set_alpha(0.0)
+
+# 为每个治疗类型绘制分段拟合线
+for i, treatment in enumerate(treatments):
+    # 筛选当前治疗方案的数据
+    treatment_data = df[df['sszx'] == treatment]
+    
+    if not treatment_data.empty:
+        # 按year排序
+        treatment_data = treatment_data.sort_values('year')
+        
+        # 提取x和y数据
+        x_data = treatment_data['year'].values
+        y_data = treatment_data['percent'].values
+        
+        # 绘制散点
+        color = colors[i % len(colors)]  # 循环使用颜色
+        ax.scatter(x_data, y_data, color=color, s=80, alpha=0.7, label=treatment)
+        
+        # 分段线性拟合：2016年至year_inter和year_inter至2024年
+        segments = [
+            (min(x_data), year_inter),  # 第一段
+            (year_inter, max(x_data))   # 第二段
+        ]
+        
+        for j, (start, end) in enumerate(segments):
+            # 筛选当前分段的数据
+            segment_mask = (x_data >= start) & (x_data <= end)
+            x_segment = x_data[segment_mask]
+            y_segment = y_data[segment_mask]
+            
+            if len(x_segment) > 1:  # 至少需要2个点才能拟合
+                # 使用numpy的polyfit进行线性拟合
+                z = np.polyfit(x_segment, y_segment, 1)  # 1次多项式（线性拟合）
+                p = np.poly1d(z)
+                
+                # 生成拟合线的x值（从分段开始到分段结束）
+                x_fit = np.linspace(start, end, 100)
+                y_fit = p(x_fit)
+                
+                # 绘制拟合线
+                # 使用虚线"--",实线"-"表示分段拟合的连接点
+                linestyle = '-' if j == 0 or (x_fit[0] > year_inter) else '-'
+                linewidth = 2.5 if j == 0 or (x_fit[0] > year_inter) else 1.5
+                
+                # 只在第一段显示图例标签，避免重复
+                if j == 0:
+                    ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                           linestyle=linestyle, alpha=0.9)
+                else:
+                    ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                           linestyle=linestyle, alpha=0.9)
+                
+                # 计算置信区间
+                # 计算残差
+                residuals = y_segment - p(x_segment)
+                # 计算残差的标准差
+                residual_std = np.std(residuals)
+                # 计算标准误差
+                n = len(x_segment)
+                if n > 2:  # 需要至少3个点来计算置信区间
+                    # 计算预测值的标准误差
+                    x_mean = np.mean(x_segment)
+                    Sxx = np.sum((x_segment - x_mean)**2)
+                    # 计算每个预测点的标准误差
+                    se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                    # 计算95%置信区间 (t分布，自由度为n-2)
+                    t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                    ci = t_val * se
+                    
+                    # 绘制95%置信区间阴影
+                    ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                                   color=color, alpha=0.15, zorder=3)
+
+# 添加分段点垂直线，突出显示转折点
+ax.axvline(x=year_inter, color='red', linestyle='--', linewidth=2.5, alpha=0.7, label=f'Segment point ({year_inter})')
+
+# 设置Y轴范围
+y_max = df['percent'].max() * 1.2  # 留20%的余量
+y_min = max(0, df['percent'].min() * 0.8)  # 确保最小值不小于0
+ax.set_ylim(y_min, y_max)
+
+# 设置X轴范围
+years = sorted(df['year'].unique())
+if len(years) > 0:
+    ax.set_xlim(min(years)-0.5, max(years)+0.5)
+    # 设置X轴刻度
+    ax.set_xticks(years)
+    ax.set_xticklabels(years, fontsize=50, rotation=45, ha='right', fontweight='bold')
+
+# 设置Y轴刻度
+y_ticks = np.linspace(0, 100, 6)  # 生成0, 20, 40, 60, 80, 100
+ax.set_yticks(y_ticks)
+ax.set_yticklabels([f'{int(tick)}' for tick in y_ticks], fontsize=50, fontweight='bold')
+
+# 设置坐标轴标签
+ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=15)
+ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=15)
+
+# 添加图例
+#ax.legend(fontsize=14, loc='upper left', frameon=False)
+
+# 移除边框，只保留坐标轴
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_visible(True)
+ax.spines['bottom'].set_visible(True)
+
+# 加粗坐标轴 - 设置线宽为2
+ax.spines['left'].set_linewidth(2)
+ax.spines['bottom'].set_linewidth(2)
+
+# 设置网格线（可选，使图表更易读）
+#ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
+
+# 调整布局
+plt.tight_layout()
+
+# 显示图表
+plt.show()
+# 创建数据
+df =pd.read_csv("pgdp_sszx_zyts.csv",encoding="gbk")
+#df = "pgdp_sszx_percent.csv",zfy,zyts
+filtered_df = df[df['sszx'].isin(['HM', 'LM', 'HIFU'])]
+df=filtered_df
+df
+#分层画图
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色（根据描述中的颜色）
+pgdp_groups = sorted(df['pgdp'].unique())
+colors = ['#008080','#808000', '#ff9999']
+treatments = ['HM', 'LM', 'HIFU']
+# 设置分段点
+year_inter = 2019  # 可根据需要调整
+
+# 设置图形内部的背景为透明
+fig.patch.set_alpha(0.0)
+ax.patch.set_alpha(0.0)
+
+##############################为每个pgdp组绘制图形###################
+for pgdp_val in pgdp_groups:
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前pgdp组的数据
+    group_data = df[df['pgdp'] == pgdp_val]
+    
+    # 为每个治疗方案绘制分段拟合线
+    for i, (treatment, color) in enumerate(zip(treatments, colors)):
+        # 筛选当前治疗方案的数据
+        treatment_data = group_data[group_data['sszx'] == treatment]
+        
+        if not treatment_data.empty:
+            # 按year排序
+            treatment_data = treatment_data.sort_values('year')
+            
+            # 提取x和y数据
+            x_data = treatment_data['year'].values
+            y_data = treatment_data['percent'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7, label=f'{treatment}')
+            
+            # 分段线性拟合：2016年至year_inter和year_inter至2024年
+            segments = [
+                (min(x_data), year_inter),  # 第一段
+                (year_inter, max(x_data))   # 第二段
+            ]
+            
+            for j, (start, end) in enumerate(segments):
+                # 筛选当前分段的数据
+                segment_mask = (x_data >= start) & (x_data <= end)
+                x_segment = x_data[segment_mask]
+                y_segment = y_data[segment_mask]
+                
+                if len(x_segment) > 1:  # 至少需要2个点才能拟合
+                    # 使用numpy的polyfit进行线性拟合
+                    z = np.polyfit(x_segment, y_segment, 1)  # 1次多项式（线性拟合）
+                    p = np.poly1d(z)
+                    
+                    # 生成拟合线的x值（从分段开始到分段结束）
+                    x_fit = np.linspace(start, end, 100)
+                    y_fit = p(x_fit)
+                    
+                    # 绘制拟合线
+                    # 使用虚线表示分段拟合的连接点
+                    linestyle = '-' if j == 0 or (x_fit[0] > year_inter) else '-'
+                    linewidth = 2.5 if j == 0 or (x_fit[0] > year_inter) else 1.5
+                    
+                    # 只在第一段显示图例标签，避免重复
+                    if j == 0:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    else:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    
+                    # 计算置信区间
+                    # 计算残差
+                    residuals = y_segment - p(x_segment)
+                    # 计算残差的标准差
+                    residual_std = np.std(residuals)
+                    # 计算标准误差
+                    n = len(x_segment)
+                    if n > 2:  # 需要至少3个点来计算置信区间
+                        # 计算预测值的标准误差
+                        x_mean = np.mean(x_segment)
+                        Sxx = np.sum((x_segment - x_mean)**2)
+                        # 计算每个预测点的标准误差
+                        se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                        # 计算95%置信区间 (t分布，自由度为n-2)
+                        t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                        ci = t_val * se
+                        
+                        # 绘制95%置信区间阴影
+                        ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                                       color=color, alpha=0.2, zorder=3)
+    
+    # 添加分段点垂直线，突出显示转折点
+    ax.axvline(x=year_inter, color='red', linestyle='--', linewidth=2.5, alpha=0.7)
+    
+    # 设置Y轴范围
+    if not group_data.empty:
+        y_max = group_data['percent'].max() * 1.2  # 留20%的余量
+        y_min = max(0, group_data['percent'].min() * 0.8)  # 确保最小值不小于0
+        ax.set_ylim(y_min, y_max)
+    else:
+        # 如果没有数据，设置默认范围
+        y_max = 100
+        y_min = 0
+        y_range = y_max - y_min
+        ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+    
+    # 设置X轴范围
+    if not group_data.empty:
+        years = sorted(group_data['year'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            # 设置X轴刻度
+            ax.set_xticks(years)
+            ax.set_xticklabels(years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    
+    # 设置Y轴刻度
+    y_ticks = [0, 20, 40, 60, 80, 100]
+    ax.set_yticks(y_ticks)
+    ax.set_yticks([10, 20, 30, 40, 50, 60, 70, 80, 90], minor=True)
+    ax.set_yticklabels(['0', '20', '40', '60', '80', '100'], fontsize=50, fontweight='bold')
+     
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+    ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=20)
+    
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by Treatment (pgdp={pgdp_val})', 
+    #             fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+#为每个sszx组绘制图形###################
+#pgdp_sszx_percent.csv
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义治疗类型和颜色
+treatments = ['HM', 'LM', 'HIFU']  # 按照sszx分三个图
+pgdp_groups = sorted(df['pgdp'].unique())  # 获取pgdp分组
+colors = ['#008080', '#808000', '#ff9999']  # 为不同的pgdp组分配颜色
+
+# 设置分段点
+year_inter = 2019  # 可根据需要调整
+
+##############################为每个sszx组绘制图形###################
+for treatment_idx, treatment in enumerate(treatments):
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前治疗类型的数据
+    treatment_data = df[df['sszx'] == treatment]
+    
+    # 为每个pgdp组绘制分段拟合线
+    for pgdp_idx, (pgdp_val, color) in enumerate(zip(pgdp_groups, colors)):
+        # 筛选当前pgdp组的数据
+        group_data = treatment_data[treatment_data['pgdp'] == pgdp_val]
+        
+        if not group_data.empty:
+            # 按year排序
+            group_data = group_data.sort_values('year')
+            
+            # 提取x和y数据
+            x_data = group_data['year'].values
+            y_data = group_data['percent'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7, label=f'pgdp={pgdp_val}')
+            
+            # 分段线性拟合：2016年至year_inter和year_inter至2024年
+            segments = [
+                (min(x_data), year_inter),  # 第一段
+                (year_inter, max(x_data))   # 第二段
+            ]
+            
+            for j, (start, end) in enumerate(segments):
+                # 筛选当前分段的数据
+                segment_mask = (x_data >= start) & (x_data <= end)
+                x_segment = x_data[segment_mask]
+                y_segment = y_data[segment_mask]
+                
+                if len(x_segment) > 1:  # 至少需要2个点才能拟合
+                    # 使用numpy的polyfit进行线性拟合
+                    z = np.polyfit(x_segment, y_segment, 1)  # 1次多项式（线性拟合）
+                    p = np.poly1d(z)
+                    
+                    # 生成拟合线的x值（从分段开始到分段结束）
+                    x_fit = np.linspace(start, end, 100)
+                    y_fit = p(x_fit)
+                    
+                    # 绘制拟合线
+                    # 使用虚线表示分段拟合的连接点
+                    linestyle = '-' if j == 0 or (x_fit[0] > year_inter) else '-'
+                    linewidth = 2.5 if j == 0 or (x_fit[0] > year_inter) else 1.5
+                    
+                    # 只在第一段显示图例标签，避免重复
+                    if j == 0:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    else:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    
+                    # 计算置信区间
+                    # 计算残差
+                    residuals = y_segment - p(x_segment)
+                    # 计算残差的标准差
+                    residual_std = np.std(residuals)
+                    # 计算标准误差
+                    n = len(x_segment)
+                    if n > 2:  # 需要至少3个点来计算置信区间
+                        # 计算预测值的标准误差
+                        x_mean = np.mean(x_segment)
+                        Sxx = np.sum((x_segment - x_mean)**2)
+                        # 计算每个预测点的标准误差
+                        se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                        # 计算95%置信区间 (t分布，自由度为n-2)
+                        t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                        ci = t_val * se
+                        
+                        # 绘制95%置信区间阴影
+                        ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                                       color=color, alpha=0.2, zorder=3)
+    
+    # 添加分段点垂直线，突出显示转折点
+    ax.axvline(x=year_inter, color='red', linestyle='--', linewidth=2.5, alpha=0.7)
+    
+    # 设置Y轴范围
+    if not treatment_data.empty:
+        y_max = treatment_data['percent'].max() * 1.2  # 留20%的余量
+        y_min = max(0, treatment_data['percent'].min() * 0.8)  # 确保最小值不小于0
+        ax.set_ylim(y_min, y_max)
+    else:
+        # 如果没有数据，设置默认范围
+        y_max = 100
+        y_min = 0
+        y_range = y_max - y_min
+        ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+    
+    # 设置X轴范围
+    if not treatment_data.empty:
+        years = sorted(treatment_data['year'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            
+            # 创建完整的年份范围，包括所有年份
+            all_years = list(range(min(years), max(years) + 1))
+            
+            # 设置X轴刻度
+            ax.set_xticks(all_years)
+            ax.set_xticklabels(all_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    else:
+        # 如果没有数据，设置默认的年份范围
+        ax.set_xlim(2015.5, 2024.5)
+        default_years = list(range(2016, 2025))
+        ax.set_xticks(default_years)
+        ax.set_xticklabels(default_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    
+    # 设置Y轴刻度
+    y_ticks = [0, 20, 40, 60, 80, 100]
+    ax.set_yticks(y_ticks)
+    ax.set_yticks([10, 20, 30, 40, 50, 60, 70, 80, 90], minor=True)
+    ax.set_yticklabels(['0', '20', '40', '60', '80', '100'], fontsize=50, fontweight='bold')
+    
+    # 添加网格线
+    #ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
+     
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+    ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by pgdp Group (Treatment: {treatment})', 
+    #             fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+#pgdp_sszx_zfy.csv
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义治疗类型和颜色
+treatments = ['HM', 'LM', 'HIFU']  # 按照sszx分三个图
+pgdp_groups = sorted(df['pgdp'].unique())  # 获取pgdp分组
+colors = ['#008080', '#808000', '#ff9999']  # 为不同的pgdp组分配颜色
+
+# 设置分段点
+year_inter = 2019  # 可根据需要调整
+
+##############################为每个sszx组绘制图形###################
+for treatment_idx, treatment in enumerate(treatments):
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前治疗类型的数据
+    treatment_data = df[df['sszx'] == treatment]
+    
+    # 为每个pgdp组绘制分段拟合线
+    for pgdp_idx, (pgdp_val, color) in enumerate(zip(pgdp_groups, colors)):
+        # 筛选当前pgdp组的数据
+        group_data = treatment_data[treatment_data['pgdp'] == pgdp_val]
+        
+        if not group_data.empty:
+            # 按year排序
+            group_data = group_data.sort_values('year1')
+            
+            # 提取x和y数据
+            x_data = group_data['year1'].values
+            y_data = group_data['zfy1'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7, label=f'pgdp={pgdp_val}')
+            
+            # 分段线性拟合：2016年至year_inter和year_inter至2024年
+            segments = [
+                (min(x_data), year_inter),  # 第一段
+                (year_inter, max(x_data))   # 第二段
+            ]
+            
+            for j, (start, end) in enumerate(segments):
+                # 筛选当前分段的数据
+                segment_mask = (x_data >= start) & (x_data <= end)
+                x_segment = x_data[segment_mask]
+                y_segment = y_data[segment_mask]
+                
+                if len(x_segment) > 1:  # 至少需要2个点才能拟合
+                    # 使用numpy的polyfit进行线性拟合
+                    z = np.polyfit(x_segment, y_segment, 1)  # 1次多项式（线性拟合）
+                    p = np.poly1d(z)
+                    
+                    # 生成拟合线的x值（从分段开始到分段结束）
+                    x_fit = np.linspace(start, end, 100)
+                    y_fit = p(x_fit)
+                    
+                    # 绘制拟合线
+                    # 使用虚线表示分段拟合的连接点
+                    linestyle = '-' if j == 0 or (x_fit[0] > year_inter) else '-'
+                    linewidth = 2.5 if j == 0 or (x_fit[0] > year_inter) else 1.5
+                    
+                    # 只在第一段显示图例标签，避免重复
+                    if j == 0:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    else:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    
+                    # 计算置信区间
+                    # 计算残差
+                    residuals = y_segment - p(x_segment)
+                    # 计算残差的标准差
+                    residual_std = np.std(residuals)
+                    # 计算标准误差
+                    n = len(x_segment)
+                    if n > 2:  # 需要至少3个点来计算置信区间
+                        # 计算预测值的标准误差
+                        x_mean = np.mean(x_segment)
+                        Sxx = np.sum((x_segment - x_mean)**2)
+                        # 计算每个预测点的标准误差
+                        se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                        # 计算95%置信区间 (t分布，自由度为n-2)
+                        t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                        ci = t_val * se
+                        
+                        # 绘制95%置信区间阴影
+                        ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                                       color=color, alpha=0.2, zorder=3)
+    
+    # 添加分段点垂直线，突出显示转折点
+    ax.axvline(x=year_inter, color='red', linestyle='--', linewidth=2.5, alpha=0.7)
+    
+    # 设置坐标轴范围
+    # 根据实际数据动态设置y轴范围
+    y_min = group_data['zfy1'].min() if not group_data.empty else 7000
+    y_max = group_data['zfy1'].max() if not group_data.empty else 17000
+    
+    # 添加一些余量
+    y_range = y_max - y_min
+    ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+
+    # 根据数据动态设置y轴刻度
+    y_ticks = np.linspace(7000, 17000, 6)  # 0到10之间取6个等间隔点
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels([f'{int(tick/1000)}k' for tick in y_ticks], fontsize=50, fontweight='bold')
+    
+    # 设置X轴范围
+    if not treatment_data.empty:
+        years = sorted(treatment_data['year1'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            
+            # 创建完整的年份范围，包括所有年份
+            all_years = list(range(min(years), max(years) + 1))
+            
+            # 设置X轴刻度
+            ax.set_xticks(all_years)
+            ax.set_xticklabels(all_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    else:
+        # 如果没有数据，设置默认的年份范围
+        ax.set_xlim(2015.5, 2024.5)
+        default_years = list(range(2016, 2025))
+        ax.set_xticks(default_years)
+        ax.set_xticklabels(default_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+
+    # 添加网格线
+    #ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
+     
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+    #ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by pgdp Group (Treatment: {treatment})', 
+    #             fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+#pgdp_sszx_zyts.csv
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义治疗类型和颜色
+treatments = ['HM', 'LM', 'HIFU']  # 按照sszx分三个图
+pgdp_groups = sorted(df['pgdp'].unique())  # 获取pgdp分组
+colors = ['#008080', '#808000', '#ff9999']  # 为不同的pgdp组分配颜色
+
+# 设置分段点
+year_inter = 2019  # 可根据需要调整
+
+##############################为每个sszx组绘制图形###################
+for treatment_idx, treatment in enumerate(treatments):
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前治疗类型的数据
+    treatment_data = df[df['sszx'] == treatment]
+    
+    # 为每个pgdp组绘制分段拟合线
+    for pgdp_idx, (pgdp_val, color) in enumerate(zip(pgdp_groups, colors)):
+        # 筛选当前pgdp组的数据
+        group_data = treatment_data[treatment_data['pgdp'] == pgdp_val]
+        
+        if not group_data.empty:
+            # 按year排序
+            group_data = group_data.sort_values('year1')
+            
+            # 提取x和y数据
+            x_data = group_data['year1'].values
+            y_data = group_data['zyts1'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7, label=f'pgdp={pgdp_val}')
+            
+            # 分段线性拟合：2016年至year_inter和year_inter至2024年
+            segments = [
+                (min(x_data), year_inter),  # 第一段
+                (year_inter, max(x_data))   # 第二段
+            ]
+            
+            for j, (start, end) in enumerate(segments):
+                # 筛选当前分段的数据
+                segment_mask = (x_data >= start) & (x_data <= end)
+                x_segment = x_data[segment_mask]
+                y_segment = y_data[segment_mask]
+                
+                if len(x_segment) > 1:  # 至少需要2个点才能拟合
+                    # 使用numpy的polyfit进行线性拟合
+                    z = np.polyfit(x_segment, y_segment, 1)  # 1次多项式（线性拟合）
+                    p = np.poly1d(z)
+                    
+                    # 生成拟合线的x值（从分段开始到分段结束）
+                    x_fit = np.linspace(start, end, 100)
+                    y_fit = p(x_fit)
+                    
+                    # 绘制拟合线
+                    # 使用虚线表示分段拟合的连接点
+                    linestyle = '-' if j == 0 or (x_fit[0] > year_inter) else '-'
+                    linewidth = 2.5 if j == 0 or (x_fit[0] > year_inter) else 1.5
+                    
+                    # 只在第一段显示图例标签，避免重复
+                    if j == 0:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    else:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    
+                    # 计算置信区间
+                    # 计算残差
+                    residuals = y_segment - p(x_segment)
+                    # 计算残差的标准差
+                    residual_std = np.std(residuals)
+                    # 计算标准误差
+                    n = len(x_segment)
+                    if n > 2:  # 需要至少3个点来计算置信区间
+                        # 计算预测值的标准误差
+                        x_mean = np.mean(x_segment)
+                        Sxx = np.sum((x_segment - x_mean)**2)
+                        # 计算每个预测点的标准误差
+                        se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                        # 计算95%置信区间 (t分布，自由度为n-2)
+                        t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                        ci = t_val * se
+                        
+                        # 绘制95%置信区间阴影
+                        ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                                       color=color, alpha=0.2, zorder=3)
+    
+    # 添加分段点垂直线，突出显示转折点
+    ax.axvline(x=year_inter, color='red', linestyle='--', linewidth=2.5, alpha=0.7)
+    
+    # 设置坐标轴范围
+    y_min = group_data['zyts1'].min() if not group_data.empty else 0
+    y_max = group_data['zyts1'].max() if not group_data.empty else 10
+    # 添加一些余量
+    y_range = y_max - y_min
+    ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+
+    # 根据数据动态设置y轴刻度
+    y_ticks = np.linspace(0, 10, 6)  # 0到10之间取6个等间隔点
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels([f'{int(tick)}' for tick in y_ticks], fontsize=50, fontweight='bold')
+    
+    # 设置X轴范围
+    if not treatment_data.empty:
+        years = sorted(treatment_data['year1'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            
+            # 创建完整的年份范围，包括所有年份
+            all_years = list(range(min(years), max(years) + 1))
+            
+            # 设置X轴刻度
+            ax.set_xticks(all_years)
+            ax.set_xticklabels(all_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    else:
+        # 如果没有数据，设置默认的年份范围
+        ax.set_xlim(2015.5, 2024.5)
+        default_years = list(range(2016, 2025))
+        ax.set_xticks(default_years)
+        ax.set_xticklabels(default_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+
+    # 添加网格线
+    #ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
+     
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+    #ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by pgdp Group (Treatment: {treatment})', 
+    #             fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+#无分段点
+# 创建数据
+df =pd.read_csv("pgdp_qzg_percent.csv",encoding="gbk")#住院天数zyts,住院费用zfy
+#df = pd.DataFrame(data, index=years)
+df
+# 无分段点
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色（根据描述中的颜色）
+pgdp_groups = sorted(df['pgdp'].unique())
+colors = ['#66b3ff','#ff9999']
+treatments = [0, 1]
+
+# 绘制拟合线图 - 单独绘制每个pgdp组的图表
+for pgdp_val in pgdp_groups:
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前pgdp组的数据
+    group_data = df[df['pgdp'] == pgdp_val]
+    
+    # 为每个治疗方案绘制拟合线
+    for i, (treatment, color) in enumerate(zip(treatments, colors)):
+        # 筛选当前治疗方案的数据
+        treatment_data = group_data[group_data['sszx'] == treatment]
+        
+        if not treatment_data.empty:
+            # 按year1排序
+            treatment_data = treatment_data.sort_values('year1')
+            
+            # 提取x和y数据
+            x_data = treatment_data['year1'].values
+            y_data = treatment_data['zfy1'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7)
+            
+            # 绘制拟合线
+            if len(x_data) > 1:  # 至少需要2个点才能拟合
+                # 使用numpy的polyfit进行线性拟合
+                z = np.polyfit(x_data, y_data, 1)  # 1次多项式（线性拟合）
+                p = np.poly1d(z)
+                
+                # 生成拟合线的x值（从最小年份到最大年份）
+                x_fit = np.linspace(min(x_data), max(x_data), 100)
+                y_fit = p(x_fit)
+                
+                # 绘制拟合线
+                ax.plot(x_fit, y_fit, color=color, linewidth=1.5, 
+                       label=f'{treatment}', alpha=0.8)
+                # 计算置信区间
+                # 计算残差
+                residuals = y_data - p(x_data)
+                # 计算残差的标准差
+                residual_std = np.std(residuals)
+                # 计算标准误差
+                n = len(x_data)
+                # 计算预测值的标准误差
+                x_mean = np.mean(x_data)
+                Sxx = np.sum((x_data - x_mean)**2)
+                # 计算每个预测点的标准误差
+                se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                # 计算95%置信区间 (t分布，自由度为n-2)
+                t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                ci = t_val * se
+                
+                # 绘制95%置信区间阴影
+                ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                               color=color, alpha=0.2, zorder=3)
+        
+    # 设置x轴范围
+    if not group_data.empty:
+        years = sorted(group_data['year1'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            # 设置X轴刻度
+            ax.set_xticks(years)
+            ax.set_xticklabels(years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    
+    # 设置Y轴刻度
+    y_ticks = np.linspace(0, 100)  # 0到10之间取6个等间隔点
+    ax.set_yticks([0, 20, 40, 60, 80, 100])
+    ax.set_yticks([10, 20, 30, 40, 50, 60, 70, 80, 90], minor=True)
+    ax.set_yticklabels(['0', '20', '40', '60', '80', '100'], fontsize=50,fontweight='bold')
+     
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+    ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 添加网格线（可选，使图表更易读）
+    ax.grid(True, alpha=0.3, linestyle='--')
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by Treatment (pgdp={pgdp_val})', 
+    #           fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+##保子宫合并亚组
+# 创建数据
+df =pd.read_csv("pgdp_qzg_percent_3group.csv",encoding="gbk")
+#df = pd.DataFrame(data, index=years)
+#df1 =pd.read_csv("age5_sszx_percent.csv",encoding="gbk")
+df
+# 无分段点
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色（根据描述中的颜色）
+pgdp_groups = sorted(df['pgdp'].unique())
+colors = ['#66b3ff','#ff9999','#588979']
+treatments = [0, 1,2]
+
+# 绘制拟合线图 - 单独绘制每个pgdp组的图表
+for pgdp_val in pgdp_groups:
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前pgdp组的数据
+    group_data = df[df['pgdp'] == pgdp_val]
+    
+    # 为每个治疗方案绘制拟合线
+    for i, (treatment, color) in enumerate(zip(treatments, colors)):
+        # 筛选当前治疗方案的数据
+        treatment_data = group_data[group_data['sszx'] == treatment]
+        
+        if not treatment_data.empty:
+            # 按year1排序
+            treatment_data = treatment_data.sort_values('year1')
+            
+            # 提取x和y数据
+            x_data = treatment_data['year1'].values
+            y_data = treatment_data['zfy1'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7)
+            
+            # 绘制拟合线
+            if len(x_data) > 1:  # 至少需要2个点才能拟合
+                # 使用numpy的polyfit进行线性拟合
+                z = np.polyfit(x_data, y_data, 1)  # 1次多项式（线性拟合）
+                p = np.poly1d(z)
+                
+                # 生成拟合线的x值（从最小年份到最大年份）
+                x_fit = np.linspace(min(x_data), max(x_data), 100)
+                y_fit = p(x_fit)
+                
+                # 绘制拟合线
+                ax.plot(x_fit, y_fit, color=color, linewidth=1.5, 
+                       label=f'{treatment}', alpha=0.8)
+                # 计算置信区间
+                # 计算残差
+                residuals = y_data - p(x_data)
+                # 计算残差的标准差
+                residual_std = np.std(residuals)
+                # 计算标准误差
+                n = len(x_data)
+                # 计算预测值的标准误差
+                x_mean = np.mean(x_data)
+                Sxx = np.sum((x_data - x_mean)**2)
+                # 计算每个预测点的标准误差
+                se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                # 计算95%置信区间 (t分布，自由度为n-2)
+                t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                ci = t_val * se
+                
+                # 绘制95%置信区间阴影
+                ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                               color=color, alpha=0.2, zorder=3)
+    
+    # 设置坐标轴范围
+    # 根据实际数据动态设置y轴范围
+    y_min = group_data['zfy1'].min() if not group_data.empty else 7000
+    y_max = group_data['zfy1'].max() if not group_data.empty else 22000
+    
+    # 添加一些余量
+    y_range = y_max - y_min
+    ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+    
+    # 设置x轴范围
+    if not group_data.empty:
+        years = sorted(group_data['year1'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            # 设置X轴刻度
+            ax.set_xticks(years)
+            ax.set_xticklabels(years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    
+    # 设置Y轴刻度
+    y_ticks = np.linspace(0, 100)  # 0到10之间取6个等间隔点
+    ax.set_yticks([0, 20, 40, 60, 80, 100])
+    ax.set_yticks([10, 20, 30, 40, 50, 60, 70, 80, 90], minor=True)
+    ax.set_yticklabels(['0', '20', '40', '60', '80', '100'], fontsize=42,fontweight='bold')
+     
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+    ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 添加网格线（可选，使图表更易读）
+    ax.grid(True, alpha=0.3, linestyle='--')
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by Treatment (pgdp={pgdp_val})', 
+    #           fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+##图例
+# 设置中文字体
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色和标签 #<35;High GDP; Tier 3; 35-44;Middle GDP; 45-;Tier2 or lower; Low GDP
+colors = ['#66b3ff','#ff9999','#588979']
+treatments = ['Tier 3', 'Tier 2 or lower'] 
+
+# 创建图形和轴
+fig, ax = plt.subplots(figsize=(8, 6),facecolor='none')
+
+# 创建矩形图例元素
+legend_elements = [mpatches.Patch(color=color, label=treatment, edgecolor='black', linewidth=0.5) 
+                   for color, treatment in zip(colors, treatments)]
+
+# 添加图例
+legend = ax.legend(handles=legend_elements, 
+                   loc='center', 
+                   frameon=False,
+                   fancybox=True,
+                   shadow=True,
+                   prop={'weight': 'bold',"size":36},
+                   edgecolor='none',
+                   ncol=3
+                   )
+
+# 设置图例边框样式
+legend.get_frame().set_linewidth(0.5)
+legend.get_frame().set_boxstyle('round,pad=0.2')
+
+# 隐藏轴
+ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+##all_sszx_percent
+# 创建数据
+df =pd.read_csv("all_sszx_percent.csv",encoding="gbk")#住院天数zyts,住院费用zfy
+#df = pd.DataFrame(data, index=years)
+df
+# 无分段点
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义颜色（根据描述中的颜色）
+pgdp_groups = sorted(df['pgdp'].unique())
+colors = ['#000080', '#808000', '#008080', '#ff9999', '#808080', '#cc99cc']
+treatments = ['AM', 'LM', 'HM', 'HIFU', 'VM', 'RFA/UAE'] 
+
+# 绘制拟合线图 - 单独绘制每个pgdp组的图表
+for pgdp_val in pgdp_groups:
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前pgdp组的数据
+    group_data = df[df['pgdp'] == pgdp_val]
+    
+    # 为每个治疗方案绘制拟合线
+    for i, (treatment, color) in enumerate(zip(treatments, colors)):
+        # 筛选当前治疗方案的数据
+        treatment_data = group_data[group_data['sszx'] == treatment]
+        
+        if not treatment_data.empty:
+            # 按year1排序
+            treatment_data = treatment_data.sort_values('year')
+            
+            # 提取x和y数据
+            x_data = treatment_data['year'].values
+            y_data = treatment_data['percent'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7)
+            
+            # 绘制拟合线
+            if len(x_data) > 1:  # 至少需要2个点才能拟合
+                # 使用numpy的polyfit进行线性拟合
+                z = np.polyfit(x_data, y_data, 1)  # 1次多项式（线性拟合）
+                p = np.poly1d(z)
+                
+                # 生成拟合线的x值（从最小年份到最大年份）
+                x_fit = np.linspace(min(x_data), max(x_data), 100)
+                y_fit = p(x_fit)
+                
+                # 绘制拟合线
+                ax.plot(x_fit, y_fit, color=color, linewidth=1.5, 
+                       label=f'{treatment}', alpha=0.8)
+                # 计算置信区间
+                # 计算残差
+                residuals = y_data - p(x_data)
+                # 计算残差的标准差
+                residual_std = np.std(residuals)
+                # 计算标准误差
+                n = len(x_data)
+                # 计算预测值的标准误差
+                x_mean = np.mean(x_data)
+                Sxx = np.sum((x_data - x_mean)**2)
+                # 计算每个预测点的标准误差
+                se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                # 计算95%置信区间 (t分布，自由度为n-2)
+                t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                ci = t_val * se
+                
+                # 绘制95%置信区间阴影
+                ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                               color=color, alpha=0.2, zorder=3)
+        
+    # 设置x轴范围
+    if not group_data.empty:
+        years = sorted(group_data['year'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            # 设置X轴刻度
+            ax.set_xticks(years)
+            ax.set_xticklabels(years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    
+    # 设置Y轴刻度
+    y_ticks = np.linspace(0, 100)  # 0到10之间取6个等间隔点
+    ax.set_yticks([0, 20, 40, 60, 80, 100])
+    ax.set_yticks([10, 20, 30, 40, 50, 60, 70, 80, 90], minor=True)
+    ax.set_yticklabels(['0', '20', '40', '60', '80', '100'], fontsize=42,fontweight='bold')
+
+    # 调整y轴刻度往上0.01
+    current_ylim = ax.get_ylim()  # 获取当前y轴范围
+    y_range = current_ylim[1] - current_ylim[0]  # 计算y轴范围
+    offset = y_range * 0.01  # 设置1%的偏移量
+    ax.set_ylim(current_ylim[0] - offset, current_ylim[1])  # 扩展y轴范围
+
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+    ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 添加网格线
+    ax.grid(True, alpha=0.3, linestyle='--')
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by Treatment (pgdp={pgdp_val})', 
+    #           fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+##yydj2##26.4.9
+# 创建数据
+df =pd.read_csv("yydj2_sszx_zfy.csv",encoding="gbk")#住院天数zyts,住院费用zfy
+#df = pd.DataFrame(data, index=years)
+filtered_df = df[df['sszx'].isin(['HM', 'LM', 'HIFU'])]
+df=filtered_df
+df
+#yydj2_sszx_percent.csv
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义治疗类型和颜色
+treatments = ['HM', 'LM', 'HIFU']  # 按照sszx分三个图
+yydj2_groups = sorted(df['yydj2'].unique())  # 获取yydj2分组
+colors = ['#008080', '#808000']  # 为不同的yydj2组分配颜色
+
+# 设置分段点
+year_inter = 2019  # 可根据需要调整
+
+##############################为每个sszx组绘制图形###################
+for treatment_idx, treatment in enumerate(treatments):
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前治疗类型的数据
+    treatment_data = df[df['sszx'] == treatment]
+    
+    # 为每个yydj2组绘制分段拟合线
+    for yydj2_idx, (yydj2_val, color) in enumerate(zip(yydj2_groups, colors)):
+        # 筛选当前yydj2组的数据
+        group_data = treatment_data[treatment_data['yydj2'] == yydj2_val]
+        
+        if not group_data.empty:
+            # 按year排序
+            group_data = group_data.sort_values('year')
+            
+            # 提取x和y数据
+            x_data = group_data['year'].values
+            y_data = group_data['percent'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7, label=f'yydj2={yydj2_val}')
+            
+            # 分段线性拟合：2016年至year_inter和year_inter至2024年
+            segments = [
+                (min(x_data), year_inter),  # 第一段
+                (year_inter, max(x_data))   # 第二段
+            ]
+            
+            for j, (start, end) in enumerate(segments):
+                # 筛选当前分段的数据
+                segment_mask = (x_data >= start) & (x_data <= end)
+                x_segment = x_data[segment_mask]
+                y_segment = y_data[segment_mask]
+                
+                if len(x_segment) > 1:  # 至少需要2个点才能拟合
+                    # 使用numpy的polyfit进行线性拟合
+                    z = np.polyfit(x_segment, y_segment, 1)  # 1次多项式（线性拟合）
+                    p = np.poly1d(z)
+                    
+                    # 生成拟合线的x值（从分段开始到分段结束）
+                    x_fit = np.linspace(start, end, 100)
+                    y_fit = p(x_fit)
+                    
+                    # 绘制拟合线
+                    # 使用虚线表示分段拟合的连接点
+                    linestyle = '-' if j == 0 or (x_fit[0] > year_inter) else '-'
+                    linewidth = 2.5 if j == 0 or (x_fit[0] > year_inter) else 1.5
+                    
+                    # 只在第一段显示图例标签，避免重复
+                    if j == 0:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    else:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    
+                    # 计算置信区间
+                    # 计算残差
+                    residuals = y_segment - p(x_segment)
+                    # 计算残差的标准差
+                    residual_std = np.std(residuals)
+                    # 计算标准误差
+                    n = len(x_segment)
+                    if n > 2:  # 需要至少3个点来计算置信区间
+                        # 计算预测值的标准误差
+                        x_mean = np.mean(x_segment)
+                        Sxx = np.sum((x_segment - x_mean)**2)
+                        # 计算每个预测点的标准误差
+                        se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                        # 计算95%置信区间 (t分布，自由度为n-2)
+                        t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                        ci = t_val * se
+                        
+                        # 绘制95%置信区间阴影
+                        ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                                       color=color, alpha=0.2, zorder=3)
+    
+    # 添加分段点垂直线，突出显示转折点
+    ax.axvline(x=year_inter, color='red', linestyle='--', linewidth=2.5, alpha=0.7)
+    
+    # 设置Y轴范围
+    if not treatment_data.empty:
+        y_max = treatment_data['percent'].max() * 1.2  # 留20%的余量
+        y_min = max(0, treatment_data['percent'].min() * 0.8)  # 确保最小值不小于0
+        ax.set_ylim(y_min, y_max)
+    else:
+        # 如果没有数据，设置默认范围
+        y_max = 100
+        y_min = 0
+        y_range = y_max - y_min
+        ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+    
+    # 设置X轴范围
+    if not treatment_data.empty:
+        years = sorted(treatment_data['year'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            
+            # 创建完整的年份范围，包括所有年份
+            all_years = list(range(min(years), max(years) + 1))
+            
+            # 设置X轴刻度
+            ax.set_xticks(all_years)
+            ax.set_xticklabels(all_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    else:
+        # 如果没有数据，设置默认的年份范围
+        ax.set_xlim(2015.5, 2024.5)
+        default_years = list(range(2016, 2025))
+        ax.set_xticks(default_years)
+        ax.set_xticklabels(default_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    
+    # 设置Y轴刻度
+    y_ticks = [0, 20, 40, 60, 80, 100]
+    ax.set_yticks(y_ticks)
+    ax.set_yticks([10, 20, 30, 40, 50, 60, 70, 80, 90], minor=True)
+    ax.set_yticklabels(['0', '20', '40', '60', '80', '100'], fontsize=50, fontweight='bold')
+    
+    # 添加网格线
+    #ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
+     
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+    ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by yydj2 Group (Treatment: {treatment})', 
+    #             fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+#yydj2_sszx_zfy.csv
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义治疗类型和颜色
+treatments = ['HM', 'LM', 'HIFU']  # 按照sszx分三个图
+yydj2_groups = sorted(df['yydj2'].unique())  # 获取yydj2分组
+colors = ['#008080', '#808000', '#ff9999']  # 为不同的yydj2组分配颜色
+
+# 设置分段点
+year_inter = 2019  # 可根据需要调整
+
+##############################为每个sszx组绘制图形###################
+for treatment_idx, treatment in enumerate(treatments):
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前治疗类型的数据
+    treatment_data = df[df['sszx'] == treatment]
+    
+    # 为每个yydj2组绘制分段拟合线
+    for yydj2_idx, (yydj2_val, color) in enumerate(zip(yydj2_groups, colors)):
+        # 筛选当前yydj2组的数据
+        group_data = treatment_data[treatment_data['yydj2'] == yydj2_val]
+        
+        if not group_data.empty:
+            # 按year排序
+            group_data = group_data.sort_values('year1')
+            
+            # 提取x和y数据
+            x_data = group_data['year1'].values
+            y_data = group_data['zfy1'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7, label=f'yydj2={yydj2_val}')
+            
+            # 分段线性拟合：2016年至year_inter和year_inter至2024年
+            segments = [
+                (min(x_data), year_inter),  # 第一段
+                (year_inter, max(x_data))   # 第二段
+            ]
+            
+            for j, (start, end) in enumerate(segments):
+                # 筛选当前分段的数据
+                segment_mask = (x_data >= start) & (x_data <= end)
+                x_segment = x_data[segment_mask]
+                y_segment = y_data[segment_mask]
+                
+                if len(x_segment) > 1:  # 至少需要2个点才能拟合
+                    # 使用numpy的polyfit进行线性拟合
+                    z = np.polyfit(x_segment, y_segment, 1)  # 1次多项式（线性拟合）
+                    p = np.poly1d(z)
+                    
+                    # 生成拟合线的x值（从分段开始到分段结束）
+                    x_fit = np.linspace(start, end, 100)
+                    y_fit = p(x_fit)
+                    
+                    # 绘制拟合线
+                    # 使用虚线表示分段拟合的连接点
+                    linestyle = '-' if j == 0 or (x_fit[0] > year_inter) else '-'
+                    linewidth = 2.5 if j == 0 or (x_fit[0] > year_inter) else 1.5
+                    
+                    # 只在第一段显示图例标签，避免重复
+                    if j == 0:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    else:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    
+                    # 计算置信区间
+                    # 计算残差
+                    residuals = y_segment - p(x_segment)
+                    # 计算残差的标准差
+                    residual_std = np.std(residuals)
+                    # 计算标准误差
+                    n = len(x_segment)
+                    if n > 2:  # 需要至少3个点来计算置信区间
+                        # 计算预测值的标准误差
+                        x_mean = np.mean(x_segment)
+                        Sxx = np.sum((x_segment - x_mean)**2)
+                        # 计算每个预测点的标准误差
+                        se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                        # 计算95%置信区间 (t分布，自由度为n-2)
+                        t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                        ci = t_val * se
+                        
+                        # 绘制95%置信区间阴影
+                        ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                                       color=color, alpha=0.2, zorder=3)
+    
+    # 添加分段点垂直线，突出显示转折点
+    ax.axvline(x=year_inter, color='red', linestyle='--', linewidth=2.5, alpha=0.7)
+    
+    # 设置坐标轴范围
+    # 根据实际数据动态设置y轴范围
+    y_min = group_data['zfy1'].min() if not group_data.empty else 7000
+    y_max = group_data['zfy1'].max() if not group_data.empty else 17000
+    
+    # 添加一些余量
+    y_range = y_max - y_min
+    ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+
+    # 根据数据动态设置y轴刻度
+    y_ticks = np.linspace(5000, 17000, 7)  # 0到10之间取6个等间隔点
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels([f'{int(tick/1000)}k' for tick in y_ticks], fontsize=50, fontweight='bold')
+    
+    # 设置X轴范围
+    if not treatment_data.empty:
+        years = sorted(treatment_data['year1'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            
+            # 创建完整的年份范围，包括所有年份
+            all_years = list(range(min(years), max(years) + 1))
+            
+            # 设置X轴刻度
+            ax.set_xticks(all_years)
+            ax.set_xticklabels(all_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    else:
+        # 如果没有数据，设置默认的年份范围
+        ax.set_xlim(2015.5, 2024.5)
+        default_years = list(range(2016, 2025))
+        ax.set_xticks(default_years)
+        ax.set_xticklabels(default_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+
+    # 添加网格线
+    #ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
+     
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+    #ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by yydj2 Group (Treatment: {treatment})', 
+    #             fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
+#yydj2_sszx_zyts.csv
+# 设置全局字体：英文使用Times New Roman，中文使用SimHei
+plt.rcParams['font.family'] = ['Times New Roman', 'SimHei'] 
+plt.rcParams['axes.unicode_minus'] = False
+
+# 定义治疗类型和颜色
+treatments = ['HM', 'LM', 'HIFU']  # 按照sszx分三个图
+yydj2_groups = sorted(df['yydj2'].unique())  # 获取yydj2分组
+colors = ['#008080', '#808000']  # 为不同的yydj2组分配颜色
+
+# 设置分段点
+year_inter = 2019  # 可根据需要调整
+
+##############################为每个sszx组绘制图形###################
+for treatment_idx, treatment in enumerate(treatments):
+    # 创建图形和坐标轴
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # 设置图形内部的背景为透明
+    fig.patch.set_alpha(0.0)
+    ax.patch.set_alpha(0.0)
+    
+    # 筛选当前治疗类型的数据
+    treatment_data = df[df['sszx'] == treatment]
+    
+    # 为每个yydj2组绘制分段拟合线
+    for yydj2_idx, (yydj2_val, color) in enumerate(zip(yydj2_groups, colors)):
+        # 筛选当前yydj2组的数据
+        group_data = treatment_data[treatment_data['yydj2'] == yydj2_val]
+        
+        if not group_data.empty:
+            # 按year排序
+            group_data = group_data.sort_values('year')
+            
+            # 提取x和y数据
+            x_data = group_data['year'].values
+            y_data = group_data['zyts1'].values
+            
+            # 绘制散点
+            ax.scatter(x_data, y_data, color=color, s=60, alpha=0.7, label=f'yydj2={yydj2_val}')
+            
+            # 分段线性拟合：2016年至year_inter和year_inter至2024年
+            segments = [
+                (min(x_data), year_inter),  # 第一段
+                (year_inter, max(x_data))   # 第二段
+            ]
+            
+            for j, (start, end) in enumerate(segments):
+                # 筛选当前分段的数据
+                segment_mask = (x_data >= start) & (x_data <= end)
+                x_segment = x_data[segment_mask]
+                y_segment = y_data[segment_mask]
+                
+                if len(x_segment) > 1:  # 至少需要2个点才能拟合
+                    # 使用numpy的polyfit进行线性拟合
+                    z = np.polyfit(x_segment, y_segment, 1)  # 1次多项式（线性拟合）
+                    p = np.poly1d(z)
+                    
+                    # 生成拟合线的x值（从分段开始到分段结束）
+                    x_fit = np.linspace(start, end, 100)
+                    y_fit = p(x_fit)
+                    
+                    # 绘制拟合线
+                    # 使用虚线表示分段拟合的连接点
+                    linestyle = '-' if j == 0 or (x_fit[0] > year_inter) else '-'
+                    linewidth = 2.5 if j == 0 or (x_fit[0] > year_inter) else 1.5
+                    
+                    # 只在第一段显示图例标签，避免重复
+                    if j == 0:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    else:
+                        ax.plot(x_fit, y_fit, color=color, linewidth=linewidth, 
+                               linestyle=linestyle, alpha=0.9)
+                    
+                    # 计算置信区间
+                    # 计算残差
+                    residuals = y_segment - p(x_segment)
+                    # 计算残差的标准差
+                    residual_std = np.std(residuals)
+                    # 计算标准误差
+                    n = len(x_segment)
+                    if n > 2:  # 需要至少3个点来计算置信区间
+                        # 计算预测值的标准误差
+                        x_mean = np.mean(x_segment)
+                        Sxx = np.sum((x_segment - x_mean)**2)
+                        # 计算每个预测点的标准误差
+                        se = residual_std * np.sqrt(1/n + (x_fit - x_mean)**2 / Sxx)
+                        # 计算95%置信区间 (t分布，自由度为n-2)
+                        t_val = stats.t.ppf(0.975, n-2)  # 95%置信水平
+                        ci = t_val * se
+                        
+                        # 绘制95%置信区间阴影
+                        ax.fill_between(x_fit, y_fit - ci, y_fit + ci, 
+                                       color=color, alpha=0.2, zorder=3)
+    
+    # 添加分段点垂直线，突出显示转折点
+    ax.axvline(x=year_inter, color='red', linestyle='--', linewidth=2.5, alpha=0.7)
+    
+    # 设置坐标轴范围
+    y_min = group_data['zyts1'].min() if not group_data.empty else 0
+    y_max = group_data['zyts1'].max() if not group_data.empty else 10
+    # 添加一些余量
+    y_range = y_max - y_min
+    ax.set_ylim(max(0, y_min - 0.1*y_range), y_max + 0.1*y_range)
+
+    # 根据数据动态设置y轴刻度
+    y_ticks = np.linspace(0, 10, 6)  # 0到10之间取6个等间隔点
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels([f'{int(tick)}' for tick in y_ticks], fontsize=50, fontweight='bold')
+    
+    # 设置X轴范围
+    if not treatment_data.empty:
+        years = sorted(treatment_data['year'].unique())
+        if len(years) > 0:
+            ax.set_xlim(min(years)-0.5, max(years)+0.5)
+            
+            # 创建完整的年份范围，包括所有年份
+            all_years = list(range(min(years), max(years) + 1))
+            
+            # 设置X轴刻度
+            ax.set_xticks(all_years)
+            ax.set_xticklabels(all_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+    else:
+        # 如果没有数据，设置默认的年份范围
+        ax.set_xlim(2015.5, 2024.5)
+        default_years = list(range(2016, 2025))
+        ax.set_xticks(default_years)
+        ax.set_xticklabels(default_years, fontsize=42, rotation=45, ha='right', fontweight='bold')
+
+    # 添加网格线
+    #ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
+     
+    # 设置坐标轴标签
+    ax.set_xlabel('Year', fontsize=42, fontweight='bold', labelpad=20)
+    #ax.set_ylabel('Prevalence (%)', fontsize=42, fontweight='bold', labelpad=20)
+    
+    # 移除边框，只保留坐标轴
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['bottom'].set_visible(True)
+    
+    # 加粗坐标轴 - 设置线宽为2.5
+    ax.spines['left'].set_linewidth(2.5)
+    ax.spines['bottom'].set_linewidth(2.5)
+    
+    # 添加图例
+    #ax.legend(loc='best', fontsize=36, frameon=False, prop={'weight': 'bold'})
+    
+    # 添加标题
+    #ax.set_title(f'Fitted Lines by yydj2 Group (Treatment: {treatment})', 
+    #             fontsize=56, fontweight='bold', pad=20)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 显示图表
+    plt.show()
